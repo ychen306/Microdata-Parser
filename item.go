@@ -11,6 +11,11 @@ func (item *Item) Get(prop string) []interface{} {
 	return item.properties[prop]
 }
 
+// get type of the item
+func (item *Item) Type() string {
+	return item.itemType
+}
+
 // get list of properties of an item
 func (item *Item) Properties() (properties []string) {
 	properties = make([]string, len(item.properties))

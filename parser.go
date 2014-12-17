@@ -1,14 +1,20 @@
 package mcrdata
 
 import (
+	"fmt"
 	"github.com/moovweb/gokogiri"
 	"github.com/moovweb/gokogiri/xml"
 	"github.com/moovweb/gokogiri/xpath"
 )
 
+type Node struct {
+	data xml.Node
+}
+
 var (
-	allPropPath     *xpath.Expression = xpath.Compile(".//*[@itemprop]")
-	scopeSearchPath *xpath.Expression = xpath.Compile("ancestor::*[@itemscope and @itemtype]")
+	allPropPath  *xpath.Expression = xpath.Compile(".//*[@itemprop]")
+	allScopePath *xpath.Expression = xpath.Compile("ancestor::*[@itemscope and @itemtype]")
+	scopeTmpl    string            = "ancestor::*[@itemscope and @itemtype=\"%s\"]"
 )
 
 func getAttr(attrs map[string]*xml.AttributeNode, attr string) (val string, ok bool) {
@@ -51,14 +57,14 @@ func getPropAndVal(node xml.Node) (prop string, val interface{}, ok bool) {
 	return
 }
 
-func getScope(node xml.Node) (scopePath, scopeType string, ok bool) {
+func getScope(scopeSearchPath *xpath.Expression, node xml.Node) (scopePath, scopeType string, ok bool) {
 	scopes, _ := node.Search(scopeSearchPath)
 	scopeCount := len(scopes)
 	if scopeCount > 0 {
 		ok = true
 		scope := scopes[scopeCount-1]
 		scopePath = scope.Path()
-		scopeType, _ = getAttr(node.Attributes(), "itemtype")
+		scopeType, _ = getAttr(scope.Attributes(), "itemtype")
 	}
 	return
 }
@@ -70,13 +76,9 @@ func makeItem(itype string) (item *Item) {
 	return
 }
 
-func find(page []byte, searchPath *xpath.Expression) (found []*Item, err error) {
-	doc, err := gokogiri.ParseHtml(page)
-	if err != nil {
-		return
-	}
+func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found []*Item, err error) {
 
-	propNodes, err := doc.Root().Search(searchPath)
+	propNodes, err := node.data.Search(allPropPath)
 	if err != nil {
 		return
 	}
@@ -90,7 +92,7 @@ func find(page []byte, searchPath *xpath.Expression) (found []*Item, err error) 
 			continue
 		}
 
-		scopePath, scopeType, ok := getScope(propNode)
+		scopePath, scopeType, ok := getScope(scopeSearchPath, propNode)
 		if !ok {
 			continue
 		}
@@ -104,14 +106,29 @@ func find(page []byte, searchPath *xpath.Expression) (found []*Item, err error) 
 		items[scopePath].addProp(prop, val)
 		switch item := val.(type) {
 		case *Item:
-			items[propNode.Path()] = item
-			found = append(found, item)
+			if itype == "" || itype == item.itemType {
+				items[propNode.Path()] = item
+				found = append(found, item)
+			}
 		}
 	}
 
 	return
 }
 
-func FindAll(page []byte) ([]*Item, error) {
-	return find(page, allPropPath)
+func Parse(page []byte) (*Node, error) {
+	doc, err := gokogiri.ParseHtml(page)
+	if err != nil {
+		return nil, err
+	}
+	return &Node{data: doc.Root()}, nil
+}
+
+func (node *Node) FindAll() ([]*Item, error) {
+	return node.find(allScopePath, "")
+}
+
+func (node *Node) Find(itype string) ([]*Item, error) {
+	scopeSearchPath := xpath.Compile(fmt.Sprintf(scopeTmpl, itype))
+	return node.find(scopeSearchPath, itype)
 }

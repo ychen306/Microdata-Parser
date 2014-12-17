@@ -12,7 +12,7 @@ node := mcrdata.Parse(page)
 items := node.FindAll(doc)
 ```
 APIs: 
-To prepare a web page before searching for items, use `func Parse`. 
+To prepare a document before searching items, use `func Parse`. 
 ```go
 func Parse(page []byte) *Node {...}
 ```
@@ -33,8 +33,9 @@ To get available properties of an item, use `func Properties`.
 ```go
 func (item *Item) Properties() []string {...}
 ```
-Note that `Node` is a type within package `mcrdata`, which internally uses `Node` from gokogiri[https://github.com/moovweb/gokogiri/]. 
-To search items within an existing `gokogiri node`, wrap it like this 
+Note that `Node` is a type within package `mcrdata`, which internally uses `Node` from [gokogiri](https://github.com/moovweb/gokogiri/). 
+
+To search items within an existing gokogiri node, wrap it like this 
 ```go
 mcrdataNode := mcrdata.Node{Data: gokogiriNode}
 ```

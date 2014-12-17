@@ -8,7 +8,7 @@ import (
 )
 
 type Node struct {
-	data xml.Node
+	Data xml.Node
 }
 
 var (
@@ -78,7 +78,7 @@ func makeItem(itype string) (item *Item) {
 
 func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found []*Item, err error) {
 
-	propNodes, err := node.data.Search(allPropPath)
+	propNodes, err := node.Data.Search(allPropPath)
 	if err != nil {
 		return
 	}
@@ -121,7 +121,7 @@ func Parse(page []byte) (*Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Node{data: doc.Root()}, nil
+	return &Node{Data: doc.Root()}, nil
 }
 
 func (node *Node) FindAll() ([]*Item, error) {

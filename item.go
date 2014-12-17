@@ -1,12 +1,12 @@
 package mcrdata
 
-// an item either have a list of properties, or a value (content), not both
+// an item either has a list of properties, or a value (content), not both
 type Item struct {
 	properties map[string][]interface{}
 	itemType   string
 }
 
-// get values of a property of an item
+// given a property name, get all the values
 func (item *Item) Get(prop string) []interface{} {
 	return item.properties[prop]
 }

@@ -56,7 +56,7 @@ func (data PlainData) Get(_ string) []Property {
 }
 
 func (data PlainData) Type() string {
-	return "string"
+	return "Text"
 }
 
 func (data PlainData) Value() string {

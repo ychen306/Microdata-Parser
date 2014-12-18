@@ -5,6 +5,7 @@ import (
 	"github.com/moovweb/gokogiri"
 	"github.com/moovweb/gokogiri/xml"
 	"github.com/moovweb/gokogiri/xpath"
+	"strings"
 )
 
 type Node struct {
@@ -26,13 +27,13 @@ func getAttr(attrs map[string]*xml.AttributeNode, attr string) (val string, ok b
 	return
 }
 
-func getPropAndVal(node xml.Node) (prop string, val Property, ok bool) {
+func getPropVal(node xml.Node) (props []string, val Property, ok bool) {
 	attrs := node.Attributes()
 	ok = true
 
 	// get property name
-	prop, _ = getAttr(attrs, "itemprop")
-
+	prop, _ := getAttr(attrs, "itemprop")
+	props = strings.Split(prop, " ")
 	// get property value
 	// property is an item
 	if _, newScope := getAttr(attrs, "itemscope"); newScope {
@@ -90,7 +91,7 @@ func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found [
 	items := make(map[string]*Item)
 
 	for _, propNode := range propNodes {
-		prop, val, ok := getPropAndVal(propNode)
+		props, val, ok := getPropVal(propNode)
 		if !ok {
 			continue
 		}
@@ -106,8 +107,10 @@ func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found [
 			found = append(found, item)
 		}
 
-		items[scopePath].addProp(prop, val)
-		if val.Type() == itype {
+		for _, prop := range props {
+			items[scopePath].addProp(prop, val)
+		}
+		if val.Type() != "Text" && (itype == "" || val.Type() == itype) {
 			item := val.(*Item)
 			items[propNode.Path()] = item
 			found = append(found, item)

@@ -9,7 +9,7 @@ import (
 resp, _ := http.Get(url)
 page, _ := ioutil.ReadAll(resp.Body)
 node := mcrdata.Parse(page)
-items := node.FindAll(doc)
+items := node.FindAll()
 ```
 APIs: 
 To prepare a document before searching items, use `func Parse`. 

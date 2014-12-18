@@ -27,14 +27,16 @@ func getAttr(attrs map[string]*xml.AttributeNode, attr string) (val string, ok b
 	return
 }
 
+// get value of properties
 func getPropVal(node xml.Node) (props []string, val Property, ok bool) {
 	attrs := node.Attributes()
 	ok = true
 
 	// get property name
 	prop, _ := getAttr(attrs, "itemprop")
+	// itemprop is actually a space delimited list of property
 	props = strings.Split(prop, " ")
-	// get property value
+
 	// property is an item
 	if _, newScope := getAttr(attrs, "itemscope"); newScope {
 		itype, _ := getAttr(attrs, "itemtype")
@@ -61,6 +63,7 @@ func getPropVal(node xml.Node) (props []string, val Property, ok bool) {
 	return
 }
 
+// get scope of a property, i.e. find closest ancestor with itemscope attribute
 func getScope(scopeSearchPath *xpath.Expression, node xml.Node) (scopePath, scopeType string, ok bool) {
 	scopes, _ := node.Search(scopeSearchPath)
 	scopeCount := len(scopes)
@@ -73,13 +76,7 @@ func getScope(scopeSearchPath *xpath.Expression, node xml.Node) (scopePath, scop
 	return
 }
 
-func makeItem(itype string) (item *Item) {
-	item = &Item{
-		properties: make(map[string][]Property),
-		itemType:   itype}
-	return
-}
-
+// find items within a node, can optionally filter by item type
 func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found []*Item, err error) {
 	searchPath := xpath.Compile(fmt.Sprintf(propSearchTmpl, node.basePath))
 	propNodes, err := node.root.Search(searchPath)
@@ -110,6 +107,8 @@ func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found [
 		for _, prop := range props {
 			items[scopePath].addProp(prop, val)
 		}
+
+		// if the value of the property happens to be an item that passes the filter, mark it as found
 		if val.Type() != "Text" && (itype == "" || val.Type() == itype) {
 			item := val.(*Item)
 			items[propNode.Path()] = item

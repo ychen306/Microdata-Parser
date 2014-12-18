@@ -15,6 +15,14 @@ type Property interface {
 
 type PlainData string
 
+// constructor of Item
+func makeItem(itype string) (item *Item) {
+	item = &Item{
+		properties: make(map[string][]Property),
+		itemType:   itype}
+	return
+}
+
 // given a property name, get all the values
 func (item *Item) Get(prop string) []Property {
 	return item.properties[prop]

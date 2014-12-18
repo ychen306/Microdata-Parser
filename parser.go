@@ -8,13 +8,14 @@ import (
 )
 
 type Node struct {
-	Data xml.Node
+	root     xml.Node
+	basePath string
 }
 
 var (
-	allPropPath  *xpath.Expression = xpath.Compile(".//*[@itemprop]")
-	allScopePath *xpath.Expression = xpath.Compile("ancestor::*[@itemscope and @itemtype]")
-	scopeTmpl    string            = "ancestor::*[@itemscope and @itemtype=\"%s\"]"
+	propSearchTmpl  string            = "%s//*[@itemprop]"
+	allScopePath    *xpath.Expression = xpath.Compile("ancestor::*[@itemscope and @itemtype]")
+	scopeSearchTmpl string            = "ancestor::*[@itemscope and @itemtype=\"%s\"]"
 )
 
 func getAttr(attrs map[string]*xml.AttributeNode, attr string) (val string, ok bool) {
@@ -77,8 +78,8 @@ func makeItem(itype string) (item *Item) {
 }
 
 func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found []*Item, err error) {
-
-	propNodes, err := node.Data.Search(allPropPath)
+	searchPath := xpath.Compile(fmt.Sprintf(propSearchTmpl, node.basePath))
+	propNodes, err := node.root.Search(searchPath)
 	if err != nil {
 		return
 	}
@@ -121,7 +122,13 @@ func Parse(page []byte) (*Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Node{Data: doc.Root()}, nil
+	return ParseXmlNode(doc.Root()), nil
+}
+
+func ParseXmlNode(node xml.Node) *Node {
+	return &Node{
+		root:     node,
+		basePath: node.Path()}
 }
 
 func (node *Node) FindAll() ([]*Item, error) {
@@ -129,6 +136,6 @@ func (node *Node) FindAll() ([]*Item, error) {
 }
 
 func (node *Node) Find(itype string) ([]*Item, error) {
-	scopeSearchPath := xpath.Compile(fmt.Sprintf(scopeTmpl, itype))
+	scopeSearchPath := xpath.Compile(fmt.Sprintf(scopeSearchTmpl, itype))
 	return node.find(scopeSearchPath, itype)
 }

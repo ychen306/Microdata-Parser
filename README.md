@@ -34,7 +34,7 @@ func Get(property string) []Property {...} // returns values of given property i
 ```
 Note that `Node` is a type within package `mcrdata`, which internally uses `Node` from [gokogiri](https://github.com/moovweb/gokogiri/). 
 
-To search items within an existing gokogiri node, wrap it using `func ParseNode`
+To search items within an existing gokogiri node, wrap it using `func ParseXmlNode`
 ```go
 func ParseXmlNode(node *xml.Node) *Node {...}
 ```

@@ -21,21 +21,20 @@ To search items within a Node, use `func Findall` for all items or `func Find` f
 func (node *Node) FindAll() []*Item {...}
 func (node *Node) Find(itemtype string) []*Item {...}
 ```
-To get property of an item, use `func Get`, which returns a slice of values, type of which can be either `string` or `Item`. 
+To get property of an item, use `func Get`, which returns a slice of `Property`. 
 ```go
-func (item *Item) Get(property string) []interface{} {...}
+func (item *Item) Get(property string) []Property {...}
 ```
-To get type of an item, use `func Type`. 
+Here is the list of functions implemented by `Property`.
 ```go
-func (item *Item) Type() string {...}
-```
-To get available properties of an item, use `func Properties`. 
-```go
-func (item *Item) Properties() []string {...}
+func Value() string {...} // returns its value if the property is a plain data
+func Properties() []string {...} // returns a slice of properties if the property is an Item
+func Type() string {...} // returns type of the property
+func Get(property string) []Property {...} // returns values of given property if the property is an Item
 ```
 Note that `Node` is a type within package `mcrdata`, which internally uses `Node` from [gokogiri](https://github.com/moovweb/gokogiri/). 
 
-To search items within an existing gokogiri node, wrap it like this 
+To search items within an existing gokogiri node, wrap it using `func ParseNode`
 ```go
-mcrdataNode := mcrdata.Node{Data: gokogiriNode}
+func ParseNode(node *xml.Node) *Node {...}
 ```

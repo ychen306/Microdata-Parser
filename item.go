@@ -2,12 +2,21 @@ package mcrdata
 
 // an item either has a list of properties, or a value (content), not both
 type Item struct {
-	properties map[string][]interface{}
+	properties map[string][]Property
 	itemType   string
 }
 
+type Property interface {
+	Properties() []string
+	Get(property string) []Property
+	Type() string
+	Value() string
+}
+
+type PlainData string
+
 // given a property name, get all the values
-func (item *Item) Get(prop string) []interface{} {
+func (item *Item) Get(prop string) []Property {
 	return item.properties[prop]
 }
 
@@ -27,9 +36,29 @@ func (item *Item) Properties() (properties []string) {
 	return
 }
 
+func (item *Item) Value() string {
+	return ""
+}
+
 // add property
-func (item *Item) addProp(prop string, val interface{}) {
+func (item *Item) addProp(prop string, val Property) {
 	propVals := item.properties[prop]
 	propVals = append(propVals, val)
 	item.properties[prop] = propVals
+}
+
+func (data PlainData) Properties() []string {
+	return nil
+}
+
+func (data PlainData) Get(_ string) []Property {
+	return nil
+}
+
+func (data PlainData) Type() string {
+	return "string"
+}
+
+func (data PlainData) Value() string {
+	return string(data)
 }

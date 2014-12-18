@@ -26,7 +26,7 @@ func getAttr(attrs map[string]*xml.AttributeNode, attr string) (val string, ok b
 	return
 }
 
-func getPropAndVal(node xml.Node) (prop string, val interface{}, ok bool) {
+func getPropAndVal(node xml.Node) (prop string, val Property, ok bool) {
 	attrs := node.Attributes()
 	ok = true
 
@@ -42,19 +42,21 @@ func getPropAndVal(node xml.Node) (prop string, val interface{}, ok bool) {
 	}
 
 	// property is a plain datatype
+	var content string
 	switch node.Name() {
 	case "img":
-		val, ok = getAttr(attrs, "src")
+		content, ok = getAttr(attrs, "src")
 	case "a":
-		val, ok = getAttr(attrs, "href")
+		content, ok = getAttr(attrs, "href")
 	default:
-		content, hasContent := getAttr(attrs, "content")
+		attrContent, hasContent := getAttr(attrs, "content")
 		if !hasContent {
-			val = node.Content()
+			content = node.Content()
 		} else {
-			val = content
+			content = attrContent
 		}
 	}
+	val = PlainData(content)
 	return
 }
 
@@ -72,7 +74,7 @@ func getScope(scopeSearchPath *xpath.Expression, node xml.Node) (scopePath, scop
 
 func makeItem(itype string) (item *Item) {
 	item = &Item{
-		properties: make(map[string][]interface{}),
+		properties: make(map[string][]Property),
 		itemType:   itype}
 	return
 }
@@ -105,15 +107,12 @@ func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found [
 		}
 
 		items[scopePath].addProp(prop, val)
-		switch item := val.(type) {
-		case *Item:
-			if itype == "" || itype == item.itemType {
-				items[propNode.Path()] = item
-				found = append(found, item)
-			}
+		if val.Type() == itype {
+			item := val.(*Item)
+			items[propNode.Path()] = item
+			found = append(found, item)
 		}
 	}
-
 	return
 }
 

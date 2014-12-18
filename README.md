@@ -36,5 +36,5 @@ Note that `Node` is a type within package `mcrdata`, which internally uses `Node
 
 To search items within an existing gokogiri node, wrap it using `func ParseNode`
 ```go
-func ParseNode(node *xml.Node) *Node {...}
+func ParseXmlNode(node *xml.Node) *Node {...}
 ```

@@ -26,7 +26,7 @@ func getAttr(attrs map[string]*xml.AttributeNode, attr string) (val string, ok b
 	return
 }
 
-func getPropVal(node xml.Node) (prop string, val Property, ok bool) {
+func getPropAndVal(node xml.Node) (prop string, val Property, ok bool) {
 	attrs := node.Attributes()
 	ok = true
 
@@ -90,7 +90,7 @@ func (node *Node) find(scopeSearchPath *xpath.Expression, itype string) (found [
 	items := make(map[string]*Item)
 
 	for _, propNode := range propNodes {
-		prop, val, ok := getPropVal(propNode)
+		prop, val, ok := getPropAndVal(propNode)
 		if !ok {
 			continue
 		}

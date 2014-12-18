@@ -1,6 +1,5 @@
 package mcrdata
 
-// an item either has a list of properties, or a value (content), not both
 type Item struct {
 	properties map[string][]Property
 	itemType   string
